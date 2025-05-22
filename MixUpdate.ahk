@@ -105,7 +105,8 @@ mainGui.Add("Text", "x67 y220 w200 h30 c0000cc", "(Game Settings Setup)").OnEven
 mainGui.Add("Text", "x71 y250 w200 h30 c0000cc", "(Skills/Looting Setup)").OnEvent("Click", (*) => Run("Bin\\guideSkills.png"))
 
 mainGui.SetFont("s12 underline", "Candara")
-mainGui.Add("Text", "x215 y282 w130 h20 cGreen", "v1.1.1")
+mainGui.Add("Text", "x215 y282 w130 h20 cGreen", "v" CurrentVersion)
+
 
 mainGui.OnEvent("Close", (*) => ExitApp())
 mainGui.Show("w258 h303")
