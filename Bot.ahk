@@ -1,40 +1,31 @@
-; Simple AutoUpdater for AHK v2
+; Bot.ahk - Self-Updating Script for AHK v2
 
-; CONFIG
-CurrentVersion := "1.0.1"  ; Your script's current version
-VersionURL := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/version.txt"
-ScriptURL := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/Bot.ahk"
-IniFile := A_ScriptDir "\BotUpdater.ini"
+; CONFIGURATION
+CurrentVersion := "1.0.1"
+VersionURL     := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/version.txt"
+ScriptURL      := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/Bot.ahk"
+IniFile        := A_ScriptDir "\BotUpdater.ini"
 
-CheckForUpdate()
+; ========================================
+; Version Comparison Helper
+CompareVersions(v1, v2)
 {
-    global CurrentVersion, VersionURL, ScriptURL, IniFile
+    v1Parts := StrSplit(v1, ".")
+    v2Parts := StrSplit(v2, ".")
 
-    ; Read saved version from ini file
-    savedVersion := IniRead(IniFile, "Update", "CurrentVersion", CurrentVersion)
-
-    remoteVersion := DownloadText(VersionURL)
-    if !remoteVersion {
-        MsgBox "Failed to check for update."
-        return
+    Loop Max(v1Parts.Length, v2Parts.Length)
+    {
+        p1 := (A_Index <= v1Parts.Length) ? v1Parts[A_Index] : 0
+        p2 := (A_Index <= v2Parts.Length) ? v2Parts[A_Index] : 0
+        if (p1 != p2)
+            return (p1 > p2) ? 1 : -1
     }
-    remoteVersion := Trim(remoteVersion)
-
-    if (remoteVersion > savedVersion) {
-        MsgBox "New version " remoteVersion " found. Updating..."
-        if DownloadFile(ScriptURL, A_ScriptFullPath) {
-            IniWrite(remoteVersion, IniFile, "Update", "CurrentVersion")
-            MsgBox "Update successful! Please restart the script."
-            ExitApp
-        } else {
-            MsgBox "Failed to download update."
-        }
-    } else {
-        MsgBox "No update available. Current version: " savedVersion
-    }
+    return 0
 }
 
 
+; ========================================
+; Download Text from URL
 DownloadText(URL)
 {
     try {
@@ -44,13 +35,15 @@ DownloadText(URL)
         if (http.Status != 200)
             return ""
         return http.ResponseText
-    } catch Error as err {
-        MsgBox "Error downloading text: " err.Message
+    } catch {
+        MsgBox("Error downloading text.")
         return ""
     }
 }
 
 
+; ========================================
+; Download File from URL and save to path
 DownloadFile(URL, LocalPath)
 {
     try {
@@ -59,17 +52,57 @@ DownloadFile(URL, LocalPath)
         http.Send()
         if (http.Status != 200)
             return false
+
         file := FileOpen(LocalPath, "w")
-        if !IsObject(file)
+        if !file
             return false
         file.Write(http.ResponseText)
         file.Close()
         return true
-    } catch Error as err {
-        MsgBox "Error downloading file: " err.Message
+    } catch {
+        MsgBox("Error downloading file.")
         return false
     }
 }
 
-; Run the updater check at script start
+
+; ========================================
+; Update Check Logic
 CheckForUpdate()
+{
+    global CurrentVersion, VersionURL, ScriptURL, IniFile
+
+    ; Read saved version or fallback to CurrentVersion
+    savedVersion := IniRead(IniFile, "Update", "CurrentVersion", CurrentVersion)
+
+
+    ; Get latest version from GitHub
+    remoteVersion := DownloadText(VersionURL)
+    if !remoteVersion {
+        MsgBox("Failed to check for update.")
+        return
+    }
+
+    remoteVersion := Trim(remoteVersion)
+
+    ; Compare and update if newer
+    if (CompareVersions(remoteVersion, savedVersion) > 0) {
+        MsgBox("New version " remoteVersion " found. Updating...")
+        if DownloadFile(ScriptURL, A_ScriptFullPath) {
+            IniWrite(remoteVersion, IniFile, "Update", "CurrentVersion")
+            MsgBox("Update successful! Please restart the script.")
+            ExitApp
+        } else {
+            MsgBox("Failed to download update.")
+        }
+    } else {
+        MsgBox("No update available. Current version: " savedVersion)
+    }
+}
+
+; ========================================
+; MAIN ENTRY
+CheckForUpdate()
+
+; Your bot's actual logic would go here
+MsgBox("Bot is running... version " CurrentVersion)
