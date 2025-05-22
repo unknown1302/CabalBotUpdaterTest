@@ -5,20 +5,30 @@
 ; --- Auto Update Configuration ---
 CurrentVersion := "1.0.2"
 VersionURL     := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/version.txt"
-ScriptURL      := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/Bot.ahk"
-IniFile        := A_ScriptDir "\BotUpdater.ini"
+ScriptURL      := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/BotMix.ahk"
+IniFile        := A_ScriptDir "\version.ini"
 
 CompareVersions(v1, v2) {
     v1Parts := StrSplit(v1, ".")
     v2Parts := StrSplit(v2, ".")
+
     Loop Max(v1Parts.Length, v2Parts.Length) {
-        p1 := (A_Index <= v1Parts.Length) ? v1Parts[A_Index] : 0
-        p2 := (A_Index <= v2Parts.Length) ? v2Parts[A_Index] : 0
+        p1 := Trim((A_Index <= v1Parts.Length) ? v1Parts[A_Index] : "0")
+        p2 := Trim((A_Index <= v2Parts.Length) ? v2Parts[A_Index] : "0")
+
+        if !RegExMatch(p1, "^\d+$") || !RegExMatch(p2, "^\d+$")
+            return 0  ; fallback if any part isn't numeric
+
+        p1 := Number(p1)
+        p2 := Number(p2)
+
         if (p1 != p2)
             return (p1 > p2) ? 1 : -1
     }
     return 0
 }
+
+
 
 DownloadText(URL) {
     try {
@@ -56,12 +66,22 @@ DownloadFile(URL, LocalPath) {
 CheckForUpdate() {
     global CurrentVersion, VersionURL, ScriptURL, IniFile
     savedVersion := IniRead(IniFile, "Update", "CurrentVersion", CurrentVersion)
+
     remoteVersion := DownloadText(VersionURL)
     if !remoteVersion {
         MsgBox("Failed to check for update.")
         return
     }
+
     remoteVersion := Trim(remoteVersion)
+    savedVersion := Trim(savedVersion)
+
+    if (remoteVersion == "" || savedVersion == "")
+    {
+        MsgBox("Invalid version string. Remote: '" remoteVersion "' Saved: '" savedVersion "'")
+        return
+    }
+
     if (CompareVersions(remoteVersion, savedVersion) > 0) {
         MsgBox("New version " remoteVersion " found. Updating...")
         if DownloadFile(ScriptURL, A_ScriptFullPath) {
@@ -75,6 +95,8 @@ CheckForUpdate() {
         MsgBox("No update available. Current version: " savedVersion)
     }
 }
+
+
 
 ; --- Run Updater ---
 CheckForUpdate()
