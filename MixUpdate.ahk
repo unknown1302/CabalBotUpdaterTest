@@ -199,7 +199,7 @@ RETARGETREF() {
         return
     RetargetCTR++
     if RetargetCTR = 1 {
-        SendMiddleClick(hwnd, 513, 177)
+        SendMiddleClick(hwnd, 0, 0)
         RetargetCTR := 0
     }
 }
