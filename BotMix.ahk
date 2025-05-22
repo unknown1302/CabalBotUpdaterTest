@@ -6,7 +6,7 @@
 CurrentVersion := "1.0.2"
 VersionURL     := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/version.txt"
 ScriptURL      := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/BotMix.ahk"
-IniFile        := A_ScriptDir "\BotUpdater.ini"
+IniFile        := A_ScriptDir "\version.ini"
 
 CompareVersions(v1, v2) {
     v1Parts := StrSplit(v1, ".")
