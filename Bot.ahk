@@ -1,3 +1,5 @@
+#Requires AutoHotkey v2
+
 ; Simple AutoUpdater for AHK v2
 
 ; CONFIG
@@ -6,40 +8,44 @@ VersionURL := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest
 ScriptURL := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/Bot.ahk"          ; URL to the updated script file
 IniFile := A_ScriptDir "\BotUpdater.ini"             ; Local INI file to store current version
 
+CheckForUpdate()  ; Call updater at script start
+
+return  ; End of auto-execute section
+
 CheckForUpdate()
 {
     global CurrentVersion, VersionURL, ScriptURL, IniFile
 
     ; Read saved version from ini file, fallback to CurrentVersion if not exist
-    IniRead savedVersion, IniFile, Update, CurrentVersion, %CurrentVersion%
+    savedVersion := IniRead(IniFile, "Update", "CurrentVersion", CurrentVersion)
 
     ; Download remote version string
     remoteVersion := DownloadText(VersionURL)
     if !remoteVersion
     {
-        MsgBox "Failed to check for update."
+        MsgBox("Failed to check for update.")
         return
     }
-    remoteVersion := Trim(remoteVersion)  ; remove whitespace
+    remoteVersion := StrTrim(remoteVersion)  ; remove whitespace
 
     if (remoteVersion > savedVersion)
     {
-        MsgBox "New version " remoteVersion " found. Updating..."
+        MsgBox("New version " remoteVersion " found. Updating...")
         if DownloadFile(ScriptURL, A_ScriptFullPath)
         {
             ; Update the ini file with new version
-            IniWrite(remoteVersion, IniFile, Update, CurrentVersion)
-            MsgBox "Update successful! Please restart the script."
-            ExitApp
+            IniWrite(IniFile, "Update", "CurrentVersion", remoteVersion)
+            MsgBox("Update successful! Please restart the script.")
+            ExitApp()
         }
         else
         {
-            MsgBox "Failed to download update."
+            MsgBox("Failed to download update.")
         }
     }
     else
     {
-        MsgBox "No update available. Current version: " savedVersion
+        MsgBox("No update available. Current version: " savedVersion)
     }
 }
 
@@ -60,7 +66,6 @@ DownloadFile(URL, LocalPath)
     req.Send()
     if (req.Status != 200)
         return false
-    ; Write downloaded file
     file := FileOpen(LocalPath, "w")
     if !IsObject(file)
         return false
@@ -68,6 +73,3 @@ DownloadFile(URL, LocalPath)
     file.Close()
     return true
 }
-
-; Call the updater check (for example, at script start)
-CheckForUpdate()
