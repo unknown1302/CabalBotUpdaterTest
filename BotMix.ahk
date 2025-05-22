@@ -1,4 +1,4 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
 #SingleInstance Off
 #MaxThreadsPerHotkey 2
 
@@ -14,11 +14,14 @@ CompareVersions(v1, v2) {
     Loop Max(v1Parts.Length, v2Parts.Length) {
         p1 := (A_Index <= v1Parts.Length) ? v1Parts[A_Index] : 0
         p2 := (A_Index <= v2Parts.Length) ? v2Parts[A_Index] : 0
+        p1 := p1 + 0  ; force numeric
+        p2 := p2 + 0  ; force numeric
         if (p1 != p2)
             return (p1 > p2) ? 1 : -1
     }
     return 0
 }
+
 
 DownloadText(URL) {
     try {
@@ -56,11 +59,13 @@ DownloadFile(URL, LocalPath) {
 CheckForUpdate() {
     global CurrentVersion, VersionURL, ScriptURL, IniFile
     savedVersion := IniRead(IniFile, "Update", "CurrentVersion", CurrentVersion)
+
     remoteVersion := DownloadText(VersionURL)
-    if !remoteVersion {
-        MsgBox("Failed to check for update.")
+    if !remoteVersion || Trim(remoteVersion) = "" {
+        MsgBox("Failed to check for update (empty version).")
         return
     }
+
     remoteVersion := Trim(remoteVersion)
     if (CompareVersions(remoteVersion, savedVersion) > 0) {
         MsgBox("New version " remoteVersion " found. Updating...")
@@ -75,6 +80,7 @@ CheckForUpdate() {
         MsgBox("No update available. Current version: " savedVersion)
     }
 }
+
 
 ; --- Run Updater ---
 CheckForUpdate()
