@@ -3,7 +3,7 @@
 ; CONFIG
 CurrentVersion := "1.0.1"  ; Your script's current version
 VersionURL := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/version.txt"  ; URL with just the latest version string
-ScriptURL := "https://example.com/Bot.ahk"          ; URL to the updated script file
+ScriptURL := "https://raw.githubusercontent.com/unknown1302/CabalBotUpdaterTest/main/Bot.ahk"          ; URL to the updated script file
 IniFile := A_ScriptDir "\BotUpdater.ini"             ; Local INI file to store current version
 
 CheckForUpdate()
